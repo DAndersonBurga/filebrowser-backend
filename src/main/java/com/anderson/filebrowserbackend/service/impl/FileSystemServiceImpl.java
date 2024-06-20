@@ -1,7 +1,7 @@
 package com.anderson.filebrowserbackend.service.impl;
 
-import com.anderson.filebrowserbackend.domain.dto.VirtualDiskSummaryResponseDto;
-import com.anderson.filebrowserbackend.domain.model.FileSystem;
+import com.anderson.filebrowserbackend.controller.response.VirtualDiskSummaryResponse;
+import com.anderson.filebrowserbackend.model.FileSystem;
 import com.anderson.filebrowserbackend.service.interfaces.FileSystemService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -17,11 +17,11 @@ public class FileSystemServiceImpl implements FileSystemService {
     private final ModelMapper mapper;
 
     @Override
-    public List<VirtualDiskSummaryResponseDto> getVirtualDisks() {
+    public List<VirtualDiskSummaryResponse> getVirtualDisks() {
 
         return fileSystem
                 .getVirtualDisks().stream()
-                .map(virtualDisk -> mapper.map(virtualDisk, VirtualDiskSummaryResponseDto.class))
+                .map(virtualDisk -> mapper.map(virtualDisk, VirtualDiskSummaryResponse.class))
                 .toList();
     }
 }

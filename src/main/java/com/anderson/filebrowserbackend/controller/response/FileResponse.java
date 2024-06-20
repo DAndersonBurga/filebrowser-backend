@@ -1,14 +1,14 @@
-package com.anderson.filebrowserbackend.domain.dto;
+package com.anderson.filebrowserbackend.controller.response;
 
-import com.anderson.filebrowserbackend.domain.model.FileType;
+import com.anderson.filebrowserbackend.model.FileType;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Data
-public class VirtualDiskSummaryResponseDto {
-
-    private String label;
+public class FileResponse {
+    private UUID id;
     private String name;
     private String description;
     private String path;
@@ -16,4 +16,5 @@ public class VirtualDiskSummaryResponseDto {
     private LocalDateTime creationAt;
     private LocalDateTime lastModifiedAt;
     private FileType fileType;
+    private String content;
 }

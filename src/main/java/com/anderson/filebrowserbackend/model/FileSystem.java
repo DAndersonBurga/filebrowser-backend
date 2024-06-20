@@ -1,4 +1,4 @@
-package com.anderson.filebrowserbackend.domain.model;
+package com.anderson.filebrowserbackend.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

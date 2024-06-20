@@ -1,10 +1,7 @@
-package com.anderson.filebrowserbackend.domain.model;
+package com.anderson.filebrowserbackend.model;
 
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-
-import java.util.Map;
-import java.util.UUID;
 
 @Getter
 @Setter
@@ -14,6 +11,4 @@ import java.util.UUID;
 @ToString(callSuper = true)
 public class VirtualDisk extends File {
     private String label;
-
-    private Map<UUID, Object> files;
 }

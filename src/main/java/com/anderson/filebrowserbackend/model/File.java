@@ -1,9 +1,11 @@
-package com.anderson.filebrowserbackend.domain.model;
+package com.anderson.filebrowserbackend.model;
 
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
+import java.util.Map;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -11,7 +13,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @SuperBuilder
 @ToString
-public abstract class File {
+public class File {
+    private UUID id;
     private String name;
     private String path;
     private String description;
@@ -19,5 +22,5 @@ public abstract class File {
     private LocalDateTime lastModifiedAt;
     private double size;
     private FileType fileType;
-
+    private Map<String, File> files;
 }
