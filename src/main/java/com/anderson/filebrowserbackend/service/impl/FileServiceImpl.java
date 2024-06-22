@@ -33,7 +33,7 @@ public class FileServiceImpl implements FileService {
             return createFolderInParent(request, virtualDisk);
         }
 
-        Directory parent = (Directory) fileSystemUtils.findFileById(virtualDisk, idParent)
+        Directory parent = (Directory) fileSystemUtils.findFileById(virtualDisk, idParent, FileType.DIRECTORY)
                 .orElseThrow(() -> new FileNotFoundException("Parent file not found"));
 
         return createFolderInParent(request, parent);
@@ -48,7 +48,7 @@ public class FileServiceImpl implements FileService {
             return createTextFileInParent(request, virtualDisk);
         }
 
-        Directory parent = (Directory) fileSystemUtils.findFileById(virtualDisk, idParent)
+        Directory parent = (Directory) fileSystemUtils.findFileById(virtualDisk, idParent, FileType.DIRECTORY)
                 .orElseThrow(() -> new FileNotFoundException("Parent file not found"));
 
         return createTextFileInParent(request, parent);
@@ -59,13 +59,14 @@ public class FileServiceImpl implements FileService {
         VirtualDisk virtualDisk = fileSystemUtils.findVirtualDisk(idDisk)
                 .orElseThrow(() -> new VirtualDiskNotFoundException("Virtual disk not found"));
 
-        Directory directory = (Directory) fileSystemUtils.findFileById(virtualDisk, idDirectory)
+        Directory directory = (Directory) fileSystemUtils.findFileById(virtualDisk, idDirectory, FileType.DIRECTORY)
                 .orElseThrow(() -> new FileNotFoundException("Directory not found"));
 
         List<FileResponse> fileResponses = new ArrayList<>();
 
         for (Map.Entry<String, File> stringFileEntry : directory.getFiles().entrySet()) {
             FileResponse fileResponse = mapper.map(stringFileEntry.getValue(), FileResponse.class);
+            fileResponse.setPath(virtualDisk.getPath() + directory.getPath() + "/" + fileResponse.getName());
             fileResponses.add(fileResponse);
         }
 
@@ -87,10 +88,17 @@ public class FileServiceImpl implements FileService {
     }
 
     private FileCreatedResponse createFolderInParent(CreateFolderRequest request, File parent) {
+
         Directory folder = mapper.map(request, Directory.class);
         folder.setCreationAt(LocalDateTime.now());
         folder.setId(UUID.randomUUID());
-        folder.setPath("/" +  folder.getName());
+
+        if(parent.getFileType() == FileType.VIRTUAL_DISK) {
+            folder.setPath("/" +  folder.getName());
+        } else {
+            folder.setPath(parent.getPath() + "/" + folder.getName());
+        }
+
         folder.setFileType(FileType.DIRECTORY);
         folder.setSize(0L);
         folder.setFiles(new HashMap<>());

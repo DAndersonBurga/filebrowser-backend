@@ -43,6 +43,7 @@ public class FilesControllers {
     @GetMapping("/directory/{id-disk}/{id-directory}")
     public ResponseEntity<List<FileResponse>> findDirectory(@PathVariable("id-disk") UUID idDisk,
                                                              @PathVariable("id-directory") UUID idDirectory) {
+
         return ResponseEntity.ok(fileService.getAllFilesInADirectory(idDisk, idDirectory));
     }
 

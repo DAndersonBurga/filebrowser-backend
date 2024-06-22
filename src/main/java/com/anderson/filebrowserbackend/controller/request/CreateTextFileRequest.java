@@ -8,11 +8,11 @@ import lombok.Getter;
 @Getter
 public class CreateTextFileRequest {
     @NotBlank(message = "El nombre no puede estar vacío")
-    String name;
+    private String name;
 
     @NotBlank(message = "La descripción no puede estar vacía")
-    String description;
+    private String description;
 
     @NotBlank(message = "El contenido no puede estar vacío")
-    String content;
+    private String content;
 }
