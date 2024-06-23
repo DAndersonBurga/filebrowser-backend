@@ -2,8 +2,10 @@ package com.anderson.filebrowserbackend.controller.api;
 
 import com.anderson.filebrowserbackend.controller.request.CreateFolderRequest;
 import com.anderson.filebrowserbackend.controller.request.CreateTextFileRequest;
+import com.anderson.filebrowserbackend.controller.request.FileCutRequest;
 import com.anderson.filebrowserbackend.controller.response.FileCreatedResponse;
 import com.anderson.filebrowserbackend.controller.response.FileResponse;
+import com.anderson.filebrowserbackend.model.FileType;
 import com.anderson.filebrowserbackend.service.interfaces.FileService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -34,10 +36,12 @@ public class FilesControllers {
         return ResponseEntity.ok(fileService.createFile(idDisk, idParent, request));
     }
 
-    @GetMapping("/{id-disk}/{id-file}")
-    public ResponseEntity<?> findById(@PathVariable("id-disk") UUID idDisk,
-                                      @PathVariable("id-file") UUID idFile) {
-        return null;
+    @GetMapping("/{id-disk}/{id-parent}/{id-file}")
+    public ResponseEntity<FileCreatedResponse> copyElement(@PathVariable("id-disk") UUID idDisk,
+                                         @PathVariable("id-parent") UUID idParent,
+                                         @PathVariable("id-file") UUID idFile) {
+
+        return ResponseEntity.ok(fileService.copyFile(idDisk, idParent, idFile));
     }
 
     @GetMapping("/directory/{id-disk}/{id-directory}")
@@ -45,6 +49,20 @@ public class FilesControllers {
                                                              @PathVariable("id-directory") UUID idDirectory) {
 
         return ResponseEntity.ok(fileService.getAllFilesInADirectory(idDisk, idDirectory));
+    }
+
+    @DeleteMapping("/delete/{id-disk}/{id-parent}/{id-file}")
+    public ResponseEntity<Void> deleteFileById(@PathVariable("id-disk") UUID idDisk,
+                                            @PathVariable("id-parent") UUID idParent,
+                                            @PathVariable("id-file") UUID idFile) {
+        fileService.deleteFile(idDisk, idParent, idFile);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/cut")
+    public ResponseEntity<Void> cutFile(@RequestBody @Valid FileCutRequest fileCutRequest) {
+        fileService.cutFile(fileCutRequest);
+        return ResponseEntity.ok().build();
     }
 
 }

@@ -29,7 +29,7 @@ public class FileSystemUtils {
     }
 
 
-    public Optional<File> findFileById(File file, UUID id, FileType fileType) {
+    public Optional<File> findFileById(File file, UUID id) {
 
         if(file == null) {
             return Optional.empty();
@@ -42,16 +42,15 @@ public class FileSystemUtils {
         for (Map.Entry<String, File> stringFileEntry : file.getFiles().entrySet()) {
             File subFile = stringFileEntry.getValue();
 
+            if (subFile.getId().equals(id)) {
+                return Optional.of(subFile);
+            }
 
-            if (subFile.getFileType() == fileType && subFile.getFiles() != null && !subFile.getFiles().isEmpty()) {
-                Optional<File> result = findFileById(subFile, id, fileType);
+            if (subFile.getFiles() != null && !subFile.getFiles().isEmpty()) {
+                Optional<File> result = findFileById(subFile, id);
                 if (result.isPresent()) {
                     return result;
                 }
-            }
-
-            if(subFile.getId().equals(id)) {
-                return Optional.of(subFile);
             }
         }
 
