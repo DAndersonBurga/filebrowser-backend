@@ -8,19 +8,17 @@ import java.util.UUID;
 
 @AllArgsConstructor
 @Getter
-public class FileCutRequest {
+public class FileActionRequest {
 
     @NotNull
     private UUID sourceDiskId;
     @NotNull
     private UUID sourceParentId;
     @NotNull
-    private UUID sourceFileId;
+    private UUID fileId;
 
     @NotNull
     private UUID destinationDiskId;
     @NotNull
     private UUID destinationParentId;
-    @NotNull
-    private UUID destinationFileId;
 }

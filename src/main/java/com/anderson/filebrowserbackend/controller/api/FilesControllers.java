@@ -2,10 +2,9 @@ package com.anderson.filebrowserbackend.controller.api;
 
 import com.anderson.filebrowserbackend.controller.request.CreateFolderRequest;
 import com.anderson.filebrowserbackend.controller.request.CreateTextFileRequest;
-import com.anderson.filebrowserbackend.controller.request.FileCutRequest;
+import com.anderson.filebrowserbackend.controller.request.FileActionRequest;
 import com.anderson.filebrowserbackend.controller.response.FileCreatedResponse;
 import com.anderson.filebrowserbackend.controller.response.FileResponse;
-import com.anderson.filebrowserbackend.model.FileType;
 import com.anderson.filebrowserbackend.service.interfaces.FileService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -36,14 +35,6 @@ public class FilesControllers {
         return ResponseEntity.ok(fileService.createFile(idDisk, idParent, request));
     }
 
-    @GetMapping("/{id-disk}/{id-parent}/{id-file}")
-    public ResponseEntity<FileCreatedResponse> copyElement(@PathVariable("id-disk") UUID idDisk,
-                                         @PathVariable("id-parent") UUID idParent,
-                                         @PathVariable("id-file") UUID idFile) {
-
-        return ResponseEntity.ok(fileService.copyFile(idDisk, idParent, idFile));
-    }
-
     @GetMapping("/directory/{id-disk}/{id-directory}")
     public ResponseEntity<List<FileResponse>> findDirectory(@PathVariable("id-disk") UUID idDisk,
                                                              @PathVariable("id-directory") UUID idDirectory) {
@@ -59,9 +50,15 @@ public class FilesControllers {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping("/copy")
+    public ResponseEntity<FileCreatedResponse> copyFile(@RequestBody @Valid FileActionRequest fileActionRequest) {
+
+        return ResponseEntity.ok(fileService.copyFile(fileActionRequest));
+    }
+
     @PostMapping("/cut")
-    public ResponseEntity<Void> cutFile(@RequestBody @Valid FileCutRequest fileCutRequest) {
-        fileService.cutFile(fileCutRequest);
+    public ResponseEntity<Void> cutFile(@RequestBody @Valid FileActionRequest fileActionRequest) {
+        fileService.cutFile(fileActionRequest);
         return ResponseEntity.ok().build();
     }
 

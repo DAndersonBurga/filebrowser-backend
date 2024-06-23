@@ -2,7 +2,7 @@ package com.anderson.filebrowserbackend.service.impl;
 
 import com.anderson.filebrowserbackend.controller.request.CreateFolderRequest;
 import com.anderson.filebrowserbackend.controller.request.CreateTextFileRequest;
-import com.anderson.filebrowserbackend.controller.request.FileCutRequest;
+import com.anderson.filebrowserbackend.controller.request.FileActionRequest;
 import com.anderson.filebrowserbackend.controller.response.FileCreatedResponse;
 import com.anderson.filebrowserbackend.controller.response.FileResponse;
 import com.anderson.filebrowserbackend.error.exceptions.FileNotFoundException;
@@ -76,16 +76,25 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public FileCreatedResponse copyFile(UUID idDisk, UUID idParent, UUID idFile) {
-        VirtualDisk virtualDisk = fileSystemUtils.findVirtualDisk(idDisk)
+    public FileCreatedResponse copyFile(FileActionRequest fileActionRequest) {
+        VirtualDisk sourceVirtualDisk = fileSystemUtils.findVirtualDisk(fileActionRequest.getSourceDiskId())
                 .orElseThrow(() -> new VirtualDiskNotFoundException("Virtual disk not found"));
 
-        File file = fileSystemUtils.findFileById(virtualDisk, idFile)
+        File file = fileSystemUtils.findFileById(sourceVirtualDisk, fileActionRequest.getFileId())
                 .orElseThrow(() -> new FileNotFoundException("File not found"));
 
         File newFile = SerializationUtils.clone(file);
 
-        return copyFileInParent(virtualDisk, idDisk, idParent, newFile);
+        VirtualDisk destinationVirtualDisk;
+
+        if(fileActionRequest.getSourceDiskId() == fileActionRequest.getDestinationDiskId()) {
+            destinationVirtualDisk = sourceVirtualDisk;
+        } else {
+            destinationVirtualDisk = fileSystemUtils.findVirtualDisk(fileActionRequest.getDestinationDiskId())
+                    .orElseThrow(() -> new VirtualDiskNotFoundException("Virtual disk not found"));
+        }
+
+        return copyFileInParent(destinationVirtualDisk, destinationVirtualDisk.getId(), fileActionRequest.getDestinationParentId(), newFile);
     }
 
     @Override
@@ -104,7 +113,7 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public void cutFile(FileCutRequest fileCutRequest) {
+    public void cutFile(FileActionRequest fileActionRequest) {
 
     }
 
