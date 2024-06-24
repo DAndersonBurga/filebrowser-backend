@@ -3,9 +3,10 @@ package com.anderson.filebrowserbackend.service.impl;
 import com.anderson.filebrowserbackend.controller.request.CreateFolderRequest;
 import com.anderson.filebrowserbackend.controller.request.CreateTextFileRequest;
 import com.anderson.filebrowserbackend.controller.request.FileActionRequest;
-import com.anderson.filebrowserbackend.controller.response.FileCreatedResponse;
+import com.anderson.filebrowserbackend.controller.response.FileActionResponse;
 import com.anderson.filebrowserbackend.controller.response.FileResponse;
 import com.anderson.filebrowserbackend.error.exceptions.FileNotFoundException;
+import com.anderson.filebrowserbackend.error.exceptions.FileSourceInvalidException;
 import com.anderson.filebrowserbackend.error.exceptions.VirtualDiskNotFoundException;
 import com.anderson.filebrowserbackend.model.*;
 import com.anderson.filebrowserbackend.service.interfaces.FileService;
@@ -26,7 +27,7 @@ public class FileServiceImpl implements FileService {
     private final FileSystemUtils fileSystemUtils;
 
     @Override
-    public FileCreatedResponse createFolder(UUID idDisk, UUID idParent, CreateFolderRequest request) {
+    public FileActionResponse createFolder(UUID idDisk, UUID idParent, CreateFolderRequest request) {
 
         VirtualDisk virtualDisk = fileSystemUtils.findVirtualDisk(idDisk)
                 .orElseThrow(() -> new VirtualDiskNotFoundException("Virtual disk not found"));
@@ -42,7 +43,7 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public FileCreatedResponse createFile(UUID idDisk, UUID idParent, CreateTextFileRequest request) {
+    public FileActionResponse createFile(UUID idDisk, UUID idParent, CreateTextFileRequest request) {
         VirtualDisk virtualDisk = fileSystemUtils.findVirtualDisk(idDisk)
                 .orElseThrow(() -> new VirtualDiskNotFoundException("Virtual disk not found"));
 
@@ -76,7 +77,7 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public FileCreatedResponse copyFile(FileActionRequest fileActionRequest) {
+    public FileActionResponse copyFile(FileActionRequest fileActionRequest) {
         VirtualDisk sourceVirtualDisk = fileSystemUtils.findVirtualDisk(fileActionRequest.getSourceDiskId())
                 .orElseThrow(() -> new VirtualDiskNotFoundException("Virtual disk not found"));
 
@@ -105,7 +106,7 @@ public class FileServiceImpl implements FileService {
         if(idDisk.equals(idParent)) {
             virtualDisk.getFiles().remove(idFile.toString());
         } else {
-            File parent = fileSystemUtils.findFileById(virtualDisk, idFile)
+            File parent = fileSystemUtils.findFileById(virtualDisk, idParent)
                     .orElseThrow(() -> new FileNotFoundException("Parent directory not found"));
 
             parent.getFiles().remove(idFile.toString());
@@ -113,11 +114,46 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public void cutFile(FileActionRequest fileActionRequest) {
+    public FileActionResponse cutFile(FileActionRequest fileActionRequest) {
+        if(fileActionRequest.getDestinationDiskId().equals(fileActionRequest.getSourceDiskId()) &&
+            fileActionRequest.getDestinationParentId().equals(fileActionRequest.getSourceParentId())) {
+            throw new FileSourceInvalidException("El origen y el destino son los mismos");
+        }
+
+        VirtualDisk sourceVirtualDisk = fileSystemUtils.findVirtualDisk(fileActionRequest.getSourceDiskId())
+                .orElseThrow(() -> new VirtualDiskNotFoundException("Virtual disk not found"));
+
+        File file = fileSystemUtils.findFileById(sourceVirtualDisk, fileActionRequest.getFileId())
+                .orElseThrow(() -> new FileNotFoundException("File not found"));
+
+        File newFile = SerializationUtils.clone(file);
+
+        // Delete file in the source
+        deleteFile(fileActionRequest.getSourceDiskId(),
+                fileActionRequest.getSourceParentId(),
+                fileActionRequest.getFileId());
+
+        // Insert file in destination
+        VirtualDisk destinationVirtualDisk = fileSystemUtils.findVirtualDisk(fileActionRequest.getDestinationDiskId())
+                .orElseThrow(() -> new VirtualDiskNotFoundException("Virtual disk not found"));
+
+        if(fileActionRequest.getDestinationDiskId().equals(fileActionRequest.getDestinationParentId())) {
+            destinationVirtualDisk.getFiles().put(newFile.getId().toString(), newFile);
+            return new FileActionResponse("Archivo cortado correctamente!", newFile.getFileType());
+        }
+
+        Directory parent = (Directory) fileSystemUtils.findFileById(
+                    destinationVirtualDisk, fileActionRequest.getDestinationParentId()
+                )
+            .orElseThrow(() -> new FileNotFoundException("Parent directory not found"));
+
+        parent.getFiles().put(newFile.getId().toString(), newFile);
+
+        return new FileActionResponse("Archivo cortado correctamente!", newFile.getFileType());
 
     }
 
-    private FileCreatedResponse createTextFileInParent(CreateTextFileRequest request, File parent) {
+    private FileActionResponse createTextFileInParent(CreateTextFileRequest request, File parent) {
         TextFile file = mapper.map(request, TextFile.class);
         file.setCreationAt(LocalDateTime.now());
         file.setId(UUID.randomUUID());
@@ -128,10 +164,10 @@ public class FileServiceImpl implements FileService {
 
         parent.getFiles().put(file.getId().toString(), file);
 
-        return new FileCreatedResponse("Folder created", file.getFileType());
+        return new FileActionResponse("Folder created", file.getFileType());
     }
 
-    private FileCreatedResponse createFolderInParent(CreateFolderRequest request, File parent) {
+    private FileActionResponse createFolderInParent(CreateFolderRequest request, File parent) {
 
         Directory folder = mapper.map(request, Directory.class);
         folder.setCreationAt(LocalDateTime.now());
@@ -149,10 +185,10 @@ public class FileServiceImpl implements FileService {
 
         parent.getFiles().put(folder.getId().toString(), folder);
 
-        return new FileCreatedResponse("Folder created", folder.getFileType());
+        return new FileActionResponse("Folder created", folder.getFileType());
     }
 
-    private FileCreatedResponse copyFileInParent(VirtualDisk virtualDisk, UUID idDisk, UUID idParent, File newFile) {
+    private FileActionResponse copyFileInParent(VirtualDisk virtualDisk, UUID idDisk, UUID idParent, File newFile) {
         UUID uuid = UUID.randomUUID();
         newFile.setName(newFile.getName() + "-copy" + uuid.toString().substring(0,5));
         newFile.setId(uuid);
@@ -166,7 +202,7 @@ public class FileServiceImpl implements FileService {
 
             virtualDisk.getFiles().put(uuid.toString(), newFile);
 
-            return new FileCreatedResponse("Archivo copiado correctamente!", newFile.getFileType());
+            return new FileActionResponse("Archivo copiado correctamente!", newFile.getFileType());
         }
 
         Directory directory = (Directory) fileSystemUtils.findFileById(virtualDisk, idParent)
@@ -180,7 +216,7 @@ public class FileServiceImpl implements FileService {
 
         directory.getFiles().put(newFile.getId().toString(), newFile);
 
-        return new FileCreatedResponse("Archivo copiado correctamente!", newFile.getFileType());
+        return new FileActionResponse("Archivo copiado correctamente!", newFile.getFileType());
     }
 
 }

@@ -6,7 +6,7 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class FileCreatedResponse {
+public class FileActionResponse {
     private String message;
     private FileType fileType;
 }
