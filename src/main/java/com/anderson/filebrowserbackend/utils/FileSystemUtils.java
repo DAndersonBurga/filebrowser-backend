@@ -1,12 +1,12 @@
 package com.anderson.filebrowserbackend.utils;
 
-import com.anderson.filebrowserbackend.model.File;
-import com.anderson.filebrowserbackend.model.FileSystem;
-import com.anderson.filebrowserbackend.model.FileType;
-import com.anderson.filebrowserbackend.model.VirtualDisk;
+import com.anderson.filebrowserbackend.controller.response.FileResponse;
+import com.anderson.filebrowserbackend.model.*;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -16,6 +16,7 @@ import java.util.UUID;
 public class FileSystemUtils {
 
     private final FileSystem fileSystem;
+    private final ModelMapper mapper;
 
     public Optional<VirtualDisk> findVirtualDisk(UUID idDisk) {
 
@@ -28,6 +29,25 @@ public class FileSystemUtils {
         return Optional.empty();
     }
 
+    public void searchFilesByName(List<FileResponse> coincidences, String query, File parent, VirtualDisk virtualDisk) {
+
+        for (Map.Entry<String, File> stringFileEntry : parent.getFiles().entrySet()) {
+            File subFile = stringFileEntry.getValue();
+
+            if (subFile.getName().contains(query)) {
+                FileResponse fileResponse = mapper.map(subFile, FileResponse.class);
+
+                fileResponse.setPath(virtualDisk.getPath() + subFile.getPath());
+
+                coincidences.add(fileResponse);
+            }
+
+            if (subFile.getFiles() != null && !subFile.getFiles().isEmpty()) {
+                searchFilesByName(coincidences, query, subFile, virtualDisk);
+            }
+        }
+
+    }
 
     public Optional<File> findFileById(File file, UUID id) {
 

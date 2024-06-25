@@ -3,6 +3,7 @@ package com.anderson.filebrowserbackend.service.interfaces;
 import com.anderson.filebrowserbackend.controller.request.CreateFolderRequest;
 import com.anderson.filebrowserbackend.controller.request.CreateTextFileRequest;
 import com.anderson.filebrowserbackend.controller.request.FileActionRequest;
+import com.anderson.filebrowserbackend.controller.request.SearchRequest;
 import com.anderson.filebrowserbackend.controller.response.FileActionResponse;
 import com.anderson.filebrowserbackend.controller.response.FileResponse;
 
@@ -18,4 +19,6 @@ public interface FileService {
 
     FileActionResponse copyFile(FileActionRequest fileActionRequest);
     FileActionResponse cutFile(FileActionRequest fileActionRequest);
+
+    List<FileResponse> search(SearchRequest searchRequest);
 }

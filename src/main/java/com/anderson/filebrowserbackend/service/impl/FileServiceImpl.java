@@ -3,6 +3,7 @@ package com.anderson.filebrowserbackend.service.impl;
 import com.anderson.filebrowserbackend.controller.request.CreateFolderRequest;
 import com.anderson.filebrowserbackend.controller.request.CreateTextFileRequest;
 import com.anderson.filebrowserbackend.controller.request.FileActionRequest;
+import com.anderson.filebrowserbackend.controller.request.SearchRequest;
 import com.anderson.filebrowserbackend.controller.response.FileActionResponse;
 import com.anderson.filebrowserbackend.controller.response.FileResponse;
 import com.anderson.filebrowserbackend.error.exceptions.FileNotFoundException;
@@ -151,6 +152,25 @@ public class FileServiceImpl implements FileService {
 
         return new FileActionResponse("Archivo cortado correctamente!", newFile.getFileType());
 
+    }
+
+    @Override
+    public List<FileResponse> search(SearchRequest searchRequest) {
+        List<FileResponse> coincidences = new ArrayList<>();
+        VirtualDisk virtualDisk = fileSystemUtils.findVirtualDisk(searchRequest.getDiskId())
+                .orElseThrow(() -> new VirtualDiskNotFoundException("Virtual disk not found"));
+
+        if(searchRequest.getDiskId().equals(searchRequest.getParentId())) {
+            fileSystemUtils.searchFilesByName(coincidences, searchRequest.getQuery(), virtualDisk, virtualDisk);
+            return coincidences;
+        }
+
+        File parent = fileSystemUtils.findFileById(virtualDisk, searchRequest.getParentId())
+                .orElseThrow(() -> new FileNotFoundException("Parent file not found"));
+
+        fileSystemUtils.searchFilesByName(coincidences, searchRequest.getQuery(), parent, virtualDisk);
+
+        return coincidences;
     }
 
     private FileActionResponse createTextFileInParent(CreateTextFileRequest request, File parent) {
