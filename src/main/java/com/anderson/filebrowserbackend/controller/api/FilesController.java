@@ -3,6 +3,7 @@ package com.anderson.filebrowserbackend.controller.api;
 import com.anderson.filebrowserbackend.controller.request.CreateFolderRequest;
 import com.anderson.filebrowserbackend.controller.request.CreateTextFileRequest;
 import com.anderson.filebrowserbackend.controller.request.FileActionRequest;
+import com.anderson.filebrowserbackend.controller.request.FileUpdateRequest;
 import com.anderson.filebrowserbackend.controller.response.FileActionResponse;
 import com.anderson.filebrowserbackend.controller.response.FileResponse;
 import com.anderson.filebrowserbackend.service.interfaces.FileService;
@@ -42,8 +43,16 @@ public class FilesController {
         return ResponseEntity.ok(fileService.getAllFilesInADirectory(idDisk, idDirectory));
     }
 
+    @PutMapping("/edit/{id-disk}/{id-file}")
+    public ResponseEntity<FileActionResponse> editFile(@PathVariable("id-disk") UUID idDisk,
+                                                       @PathVariable("id-file") UUID idFile,
+                                                       @RequestBody @Valid FileUpdateRequest fileUpdateRequest) {
+
+        return ResponseEntity.ok(fileService.editFile(idDisk, idFile, fileUpdateRequest));
+    }
+
     @DeleteMapping("/delete/{id-disk}/{id-parent}/{id-file}")
-    public ResponseEntity<Void> deleteFileById(@PathVariable("id-disk") UUID idDisk,
+    public ResponseEntity<Void> deleteFile(@PathVariable("id-disk") UUID idDisk,
                                             @PathVariable("id-parent") UUID idParent,
                                             @PathVariable("id-file") UUID idFile) {
         fileService.deleteFile(idDisk, idParent, idFile);

@@ -1,9 +1,6 @@
 package com.anderson.filebrowserbackend.service.impl;
 
-import com.anderson.filebrowserbackend.controller.request.CreateFolderRequest;
-import com.anderson.filebrowserbackend.controller.request.CreateTextFileRequest;
-import com.anderson.filebrowserbackend.controller.request.FileActionRequest;
-import com.anderson.filebrowserbackend.controller.request.SearchRequest;
+import com.anderson.filebrowserbackend.controller.request.*;
 import com.anderson.filebrowserbackend.controller.response.FileActionResponse;
 import com.anderson.filebrowserbackend.controller.response.FileResponse;
 import com.anderson.filebrowserbackend.error.exceptions.FileNotFoundException;
@@ -56,6 +53,26 @@ public class FileServiceImpl implements FileService {
                 .orElseThrow(() -> new FileNotFoundException("Parent file not found"));
 
         return createTextFileInParent(request, parent);
+    }
+
+    @Override
+    public FileActionResponse editFile(UUID idDisk, UUID idFile, FileUpdateRequest fileUpdateRequest) {
+        VirtualDisk virtualDisk = fileSystemUtils.findVirtualDisk(idDisk)
+                .orElseThrow(() -> new VirtualDiskNotFoundException("Virtual disk not found"));
+
+        File file = fileSystemUtils.findFileById(virtualDisk, idFile)
+                .orElseThrow(() -> new FileNotFoundException("File not found"));
+
+        file.setName(fileUpdateRequest.getName());
+        file.setDescription(fileUpdateRequest.getDescription());
+        file.setLastModifiedAt(LocalDateTime.now());
+
+        if(file.getFileType() == FileType.TXT_FILE) {
+            TextFile textFile = (TextFile) file;
+            textFile.setContent(fileUpdateRequest.getContent());
+        }
+
+        return new FileActionResponse("File updated", file.getFileType());
     }
 
     @Override
@@ -121,6 +138,10 @@ public class FileServiceImpl implements FileService {
             throw new FileSourceInvalidException("El origen y el destino son los mismos");
         }
 
+        if(fileActionRequest.getDestinationParentId().equals(fileActionRequest.getFileId())) {
+            throw new FileSourceInvalidException("Origen y destino no permitidos");
+        }
+
         VirtualDisk sourceVirtualDisk = fileSystemUtils.findVirtualDisk(fileActionRequest.getSourceDiskId())
                 .orElseThrow(() -> new VirtualDiskNotFoundException("Virtual disk not found"));
 
@@ -184,7 +205,7 @@ public class FileServiceImpl implements FileService {
 
         parent.getFiles().put(file.getId().toString(), file);
 
-        return new FileActionResponse("Folder created", file.getFileType());
+        return new FileActionResponse("File created", file.getFileType());
     }
 
     private FileActionResponse createFolderInParent(CreateFolderRequest request, File parent) {
