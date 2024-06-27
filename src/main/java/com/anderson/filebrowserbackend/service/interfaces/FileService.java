@@ -1,6 +1,7 @@
 package com.anderson.filebrowserbackend.service.interfaces;
 
 import com.anderson.filebrowserbackend.controller.request.*;
+import com.anderson.filebrowserbackend.controller.response.DirectorySearchResponse;
 import com.anderson.filebrowserbackend.controller.response.FileActionResponse;
 import com.anderson.filebrowserbackend.controller.response.FileResponse;
 
@@ -19,4 +20,5 @@ public interface FileService {
 
     List<FileResponse> search(SearchRequest searchRequest);
 
+    DirectorySearchResponse findWithPath(String path);
 }

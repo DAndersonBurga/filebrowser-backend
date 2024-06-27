@@ -24,4 +24,6 @@ public class File implements Serializable {
     private double size;
     private FileType fileType;
     private Map<String, File> files;
+    private UUID diskId;
+    private UUID parentId;
 }

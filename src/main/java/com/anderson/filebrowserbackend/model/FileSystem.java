@@ -20,4 +20,5 @@ import java.util.List;
 @NoArgsConstructor
 public class FileSystem {
     List<VirtualDisk> virtualDisks = new ArrayList<>();
+    List<File> quickAccessList = new ArrayList<>();
 }

@@ -17,4 +17,6 @@ public class FileResponse {
     private LocalDateTime lastModifiedAt;
     private FileType fileType;
     private String content;
+    private UUID diskId;
+    private UUID parentId;
 }

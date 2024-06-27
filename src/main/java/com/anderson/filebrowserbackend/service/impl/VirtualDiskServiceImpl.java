@@ -28,9 +28,13 @@ public class VirtualDiskServiceImpl implements VirtualDiskService {
         virtualDisk.setId(UUID.randomUUID());
         virtualDisk.setCreationAt(LocalDateTime.now());
         virtualDisk.setFiles(new HashMap<>());
-        virtualDisk.setSize(0L);
         virtualDisk.setPath("/".concat(virtualDisk.getLabel()));
         virtualDisk.setFileType(FileType.VIRTUAL_DISK);
+
+        double size = ((double) request.getLabel().getBytes().length / 1024) +
+                ((double) request.getName().getBytes().length / 1024);
+
+        virtualDisk.setSize(size);
 
         fileSystem.getVirtualDisks().add(virtualDisk);
 
@@ -59,19 +63,9 @@ public class VirtualDiskServiceImpl implements VirtualDiskService {
             File file = stringFileEntry.getValue();
             FileResponse fileResponse;
 
-            switch (file.getFileType()) {
-                case DIRECTORY -> {
-                    Directory directory = (Directory) file;
-                    fileResponse = mapper.map(directory, FileResponse.class);
-                    fileResponse.setPath(virtualDisk.getPath() + file.getPath());
-                }
-                case TXT_FILE -> {
-                    TextFile textFile = (TextFile) file;
-                    fileResponse = mapper.map(textFile, FileResponse.class);
-                    fileResponse.setPath(virtualDisk.getPath() + file.getPath());
-                }
-
-                default -> fileResponse = null;
+            fileResponse = mapper.map(file, FileResponse.class);
+            if(file.getFileType() == FileType.TXT_FILE) {
+                fileResponse.setPath(file.getPath());
             }
 
             fileResponses.add(fileResponse);
