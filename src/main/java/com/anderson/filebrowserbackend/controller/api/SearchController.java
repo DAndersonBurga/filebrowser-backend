@@ -1,5 +1,6 @@
 package com.anderson.filebrowserbackend.controller.api;
 
+import com.anderson.filebrowserbackend.controller.request.SearchQuickAccessRequest;
 import com.anderson.filebrowserbackend.controller.request.SearchRequest;
 import com.anderson.filebrowserbackend.controller.response.FileResponse;
 import com.anderson.filebrowserbackend.service.interfaces.FileService;
@@ -25,6 +26,12 @@ public class SearchController {
     public List<FileResponse> search(@Payload @Valid SearchRequest searchRequest) {
 
         return fileService.search(searchRequest);
+    }
+
+    @MessageMapping("/search/quickAccess")
+    @SendTo("/topic/files")
+    public List<FileResponse> searchQuickAccess(@Payload @Valid SearchQuickAccessRequest searchRequest) {
+        return fileService.searchQuickAccess(searchRequest);
     }
 
 }

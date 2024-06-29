@@ -25,6 +25,7 @@ public class FileServiceImpl implements FileService {
 
     private final ModelMapper mapper;
     private final FileSystemUtils fileSystemUtils;
+    private final FileSystem fileSystem;
 
     @Override
     public FileActionResponse createFolder(UUID idDisk, UUID idParent, FolderCreateRequest request) {
@@ -148,9 +149,17 @@ public class FileServiceImpl implements FileService {
                     .orElseThrow(() -> new FileNotFoundException("Parent directory not found"));
 
             File file = parent.getFiles().get(idFile.toString());
-            parent.getFiles().remove(idFile.toString());
             parent.setSize(parent.getSize() - file.getSize());
 
+            List<File> quickAccessList = fileSystem.getQuickAccessList();
+            for (File quickAccess : quickAccessList) {
+                if(quickAccess.getId().equals(file.getId())) {
+                    quickAccessList.remove(file);
+                    break;
+                }
+            }
+
+            parent.getFiles().remove(idFile.toString());
             fileSystemUtils.updateFilesSize(virtualDisk, parent, (file.getSize() * -1));
         }
     }
@@ -224,6 +233,7 @@ public class FileServiceImpl implements FileService {
     @Override
     public List<FileResponse> search(SearchRequest searchRequest) {
         List<FileResponse> coincidences = new ArrayList<>();
+
         VirtualDisk virtualDisk = fileSystemUtils.findVirtualDisk(searchRequest.getDiskId())
                 .orElseThrow(() -> new VirtualDiskNotFoundException("Virtual disk not found"));
 
@@ -236,6 +246,7 @@ public class FileServiceImpl implements FileService {
                 .orElseThrow(() -> new FileNotFoundException("Parent file not found"));
 
         fileSystemUtils.searchFilesByName(coincidences, searchRequest.getQuery(), parent);
+
 
         return coincidences;
     }
@@ -264,6 +275,21 @@ public class FileServiceImpl implements FileService {
     @Override
     public List<TreeViewResponse> treeView() {
         return fileSystemUtils.treeView();
+    }
+
+    @Override
+    public List<FileResponse> searchQuickAccess(SearchQuickAccessRequest searchRequest) {
+        List<FileResponse> coincidences = new ArrayList<>();
+
+        List<File> quickAccessList = fileSystem.getQuickAccessList();
+        for (File file : quickAccessList) {
+            if(file.getName().contains(searchRequest.getQuery())) {
+                FileResponse fileResponse = mapper.map(file, FileResponse.class);
+                coincidences.add(fileResponse);
+            }
+        }
+
+        return coincidences;
     }
 
     private FileActionResponse createTextFileInParent(TextFileCreateRequest request, File parent, VirtualDisk virtualDisk) {

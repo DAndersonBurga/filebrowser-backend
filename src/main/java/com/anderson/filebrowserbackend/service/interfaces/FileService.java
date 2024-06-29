@@ -24,4 +24,6 @@ public interface FileService {
     DirectorySearchResponse findWithPath(String path);
 
     List<TreeViewResponse> treeView();
+
+    List<FileResponse> searchQuickAccess(SearchQuickAccessRequest searchRequest);
 }

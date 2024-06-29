@@ -9,6 +9,7 @@ import lombok.experimental.SuperBuilder;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 @JsonTypeInfo(
@@ -41,4 +42,12 @@ public class File implements Serializable {
     private Map<String, File> files;
     private UUID diskId;
     private UUID parentId;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        File file = (File) o;
+        return Objects.equals(id, file.id);
+    }
 }
