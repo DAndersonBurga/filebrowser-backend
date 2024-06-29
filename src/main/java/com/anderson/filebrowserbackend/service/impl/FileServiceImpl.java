@@ -4,6 +4,7 @@ import com.anderson.filebrowserbackend.controller.request.*;
 import com.anderson.filebrowserbackend.controller.response.DirectorySearchResponse;
 import com.anderson.filebrowserbackend.controller.response.FileActionResponse;
 import com.anderson.filebrowserbackend.controller.response.FileResponse;
+import com.anderson.filebrowserbackend.controller.response.TreeViewResponse;
 import com.anderson.filebrowserbackend.error.exceptions.FileNotFoundException;
 import com.anderson.filebrowserbackend.error.exceptions.FileSourceInvalidException;
 import com.anderson.filebrowserbackend.error.exceptions.VirtualDiskNotFoundException;
@@ -26,7 +27,7 @@ public class FileServiceImpl implements FileService {
     private final FileSystemUtils fileSystemUtils;
 
     @Override
-    public FileActionResponse createFolder(UUID idDisk, UUID idParent, CreateFolderRequest request) {
+    public FileActionResponse createFolder(UUID idDisk, UUID idParent, FolderCreateRequest request) {
 
         VirtualDisk virtualDisk = fileSystemUtils.findVirtualDisk(idDisk)
                 .orElseThrow(() -> new VirtualDiskNotFoundException("Virtual disk not found"));
@@ -42,7 +43,7 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public FileActionResponse createFile(UUID idDisk, UUID idParent, CreateTextFileRequest request) {
+    public FileActionResponse createFile(UUID idDisk, UUID idParent, TextFileCreateRequest request) {
         VirtualDisk virtualDisk = fileSystemUtils.findVirtualDisk(idDisk)
                 .orElseThrow(() -> new VirtualDiskNotFoundException("Virtual disk not found"));
 
@@ -260,7 +261,12 @@ public class FileServiceImpl implements FileService {
         return new DirectorySearchResponse(virtualDisk.getId(), directoryFound.getId());
     }
 
-    private FileActionResponse createTextFileInParent(CreateTextFileRequest request, File parent, VirtualDisk virtualDisk) {
+    @Override
+    public List<TreeViewResponse> treeView() {
+        return fileSystemUtils.treeView();
+    }
+
+    private FileActionResponse createTextFileInParent(TextFileCreateRequest request, File parent, VirtualDisk virtualDisk) {
         TextFile file = mapper.map(request, TextFile.class);
         file.setCreationAt(LocalDateTime.now());
         file.setId(UUID.randomUUID());
@@ -281,7 +287,7 @@ public class FileServiceImpl implements FileService {
         return new FileActionResponse("File created", file.getFileType());
     }
 
-    private FileActionResponse createFolderInParent(CreateFolderRequest request, File parent, VirtualDisk virtualDisk) {
+    private FileActionResponse createFolderInParent(FolderCreateRequest request, File parent, VirtualDisk virtualDisk) {
 
         Directory folder = mapper.map(request, Directory.class);
         folder.setCreationAt(LocalDateTime.now());

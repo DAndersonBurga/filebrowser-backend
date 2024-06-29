@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.annotation.SessionScope;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,7 +19,8 @@ import java.util.List;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class FileSystem {
+public class FileSystem implements Serializable {
+    private String name;
     List<VirtualDisk> virtualDisks = new ArrayList<>();
     List<File> quickAccessList = new ArrayList<>();
 }

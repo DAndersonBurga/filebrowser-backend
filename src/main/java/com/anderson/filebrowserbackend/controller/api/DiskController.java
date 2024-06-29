@@ -1,6 +1,6 @@
 package com.anderson.filebrowserbackend.controller.api;
 
-import com.anderson.filebrowserbackend.controller.request.CreateVirtualDiskRequest;
+import com.anderson.filebrowserbackend.controller.request.VirtualDiskCreateRequest;
 import com.anderson.filebrowserbackend.controller.response.FileResponse;
 import com.anderson.filebrowserbackend.controller.response.VirtualDiskSummaryResponse;
 import com.anderson.filebrowserbackend.error.ApiError;
@@ -59,7 +59,7 @@ public class DiskController {
         requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
             content = @Content(
                 mediaType = MediaType.APPLICATION_JSON_VALUE,
-                schema = @Schema(implementation = CreateVirtualDiskRequest.class)
+                schema = @Schema(implementation = VirtualDiskCreateRequest.class)
             )
         )
     )
@@ -86,7 +86,7 @@ public class DiskController {
             )
         )
     })
-    public ResponseEntity<VirtualDiskSummaryResponse> create(@RequestBody @Valid CreateVirtualDiskRequest request) {
+    public ResponseEntity<VirtualDiskSummaryResponse> create(@RequestBody @Valid VirtualDiskCreateRequest request) {
         return ResponseEntity.ok(virtualDiskService.create(request));
     }
 }

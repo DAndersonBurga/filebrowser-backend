@@ -3,10 +3,12 @@ package com.anderson.filebrowserbackend.controller.request;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @AllArgsConstructor
 @Getter
-public class CreateTextFileRequest {
+@NoArgsConstructor
+public class TextFileCreateRequest {
     @NotBlank(message = "El nombre no puede estar vacío")
     private String name;
 

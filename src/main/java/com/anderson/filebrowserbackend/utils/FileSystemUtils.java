@@ -1,16 +1,14 @@
 package com.anderson.filebrowserbackend.utils;
 
 import com.anderson.filebrowserbackend.controller.response.FileResponse;
+import com.anderson.filebrowserbackend.controller.response.TreeViewResponse;
 import com.anderson.filebrowserbackend.model.*;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 
 import javax.swing.text.html.Option;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Component
 @RequiredArgsConstructor
@@ -146,5 +144,58 @@ public class FileSystemUtils {
         }
 
         return Optional.empty();
+    }
+
+    public List<TreeViewResponse> treeView() {
+
+        List<TreeViewResponse> treeViewResponses = new ArrayList<>();
+        List<VirtualDisk> virtualDisks = fileSystem.getVirtualDisks();
+        for (VirtualDisk virtualDisk : virtualDisks) {
+            TreeViewResponse treeViewResponse = mapper.map(virtualDisk, TreeViewResponse.class);
+            treeViewResponse.setChildren(new ArrayList<>());
+            treeViewResponse.setName(virtualDisk.getLabel());
+
+            Map<String, Object> metadata = generateMetadata(virtualDisk);
+            treeViewResponse.setMetadata(metadata);
+
+            treeViewResponses.add(treeViewResponse);
+
+            buildTreeView(virtualDisk,  treeViewResponse);
+        }
+
+        return treeViewResponses;
+    }
+
+    public void buildTreeView(File file, TreeViewResponse treeViewResponse) {
+
+        for (Map.Entry<String, File> stringFileEntry : file.getFiles().entrySet()) {
+            File subFile = stringFileEntry.getValue();
+
+            if (subFile.getFileType() != FileType.TXT_FILE) {
+                TreeViewResponse child = mapper.map(subFile, TreeViewResponse.class);
+                child.setChildren(new ArrayList<>());
+
+                Map<String, Object> metadata = generateMetadata(subFile);
+                child.setMetadata(metadata);
+
+                treeViewResponse.getChildren().add(child);
+
+                if(subFile.getFiles() != null && !subFile.getFiles().isEmpty()) {
+                    buildTreeView(subFile, child);
+                }
+            }
+
+        }
+
+    }
+
+    private Map<String, Object> generateMetadata(File file) {
+        Map<String, Object> metadata = new HashMap<>();
+        metadata.put("diskId", file.getDiskId());
+        metadata.put("parentId", file.getParentId());
+        metadata.put("fileType", file.getFileType());
+        metadata.put("id", file.getId());
+        metadata.put("path", file.getPath());
+        return metadata;
     }
 }

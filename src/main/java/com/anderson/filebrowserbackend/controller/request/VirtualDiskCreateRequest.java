@@ -6,11 +6,13 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.Length;
 
 @AllArgsConstructor
+@NoArgsConstructor
 @Getter
-public class CreateVirtualDiskRequest {
+public class VirtualDiskCreateRequest {
         @NotBlank(message = "La etiqueta no puede estar vacía o nula")
         @Pattern(regexp = "^[A-Za-z]+$", message = "Solo esta permitido valores de a-z, A-Z")
         @Length(max = 1, min = 1, message = "La etiqueta debe tener un solo carácter")

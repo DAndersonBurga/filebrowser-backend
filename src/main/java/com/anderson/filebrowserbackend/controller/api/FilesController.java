@@ -4,6 +4,7 @@ import com.anderson.filebrowserbackend.controller.request.*;
 import com.anderson.filebrowserbackend.controller.response.DirectorySearchResponse;
 import com.anderson.filebrowserbackend.controller.response.FileActionResponse;
 import com.anderson.filebrowserbackend.controller.response.FileResponse;
+import com.anderson.filebrowserbackend.controller.response.TreeViewResponse;
 import com.anderson.filebrowserbackend.service.interfaces.FileService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,11 @@ public class FilesController {
 
     private final FileService fileService;
 
+    @GetMapping("/tree")
+    public ResponseEntity<List<TreeViewResponse>> treeView() {
+        return ResponseEntity.ok(fileService.treeView());
+    }
+
     @GetMapping("/path")
     public ResponseEntity<DirectorySearchResponse> findWithPath(@RequestParam(name = "path") String path) {
         return ResponseEntity.ok(fileService.findWithPath(path));
@@ -28,14 +34,14 @@ public class FilesController {
     @PostMapping("/create-folder/{id-disk}/{id-parent}")
     public ResponseEntity<FileActionResponse> createFolder(@PathVariable("id-disk") UUID idDisk,
                                                            @PathVariable("id-parent") UUID idParent,
-                                                           @RequestBody @Valid CreateFolderRequest request) {
+                                                           @RequestBody @Valid FolderCreateRequest request) {
         return ResponseEntity.ok(fileService.createFolder(idDisk, idParent, request));
     }
 
     @PostMapping("/create-file/{id-disk}/{id-parent}")
     public ResponseEntity<FileActionResponse> createFile(@PathVariable("id-disk") UUID idDisk,
                                                          @PathVariable("id-parent") UUID idParent,
-                                                         @RequestBody @Valid CreateTextFileRequest request) {
+                                                         @RequestBody @Valid TextFileCreateRequest request) {
         return ResponseEntity.ok(fileService.createFile(idDisk, idParent, request));
     }
 

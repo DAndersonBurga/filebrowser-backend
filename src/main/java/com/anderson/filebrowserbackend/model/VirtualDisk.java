@@ -1,8 +1,10 @@
 package com.anderson.filebrowserbackend.model;
 
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
+@JsonTypeName("VIRTUAL_DISK")
 @Getter
 @Setter
 @NoArgsConstructor

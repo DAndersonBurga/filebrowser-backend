@@ -1,7 +1,7 @@
 package com.anderson.filebrowserbackend.service.impl;
 
 import com.anderson.filebrowserbackend.controller.response.FileResponse;
-import com.anderson.filebrowserbackend.controller.request.CreateVirtualDiskRequest;
+import com.anderson.filebrowserbackend.controller.request.VirtualDiskCreateRequest;
 import com.anderson.filebrowserbackend.controller.response.VirtualDiskSummaryResponse;
 import com.anderson.filebrowserbackend.model.*;
 import com.anderson.filebrowserbackend.error.exceptions.VirtualDiskNotFoundException;
@@ -21,7 +21,7 @@ public class VirtualDiskServiceImpl implements VirtualDiskService {
     private final ModelMapper mapper;
 
     @Override
-    public VirtualDiskSummaryResponse create(CreateVirtualDiskRequest request) {
+    public VirtualDiskSummaryResponse create(VirtualDiskCreateRequest request) {
 
         VirtualDisk virtualDisk = mapper.map(request, VirtualDisk.class);
 

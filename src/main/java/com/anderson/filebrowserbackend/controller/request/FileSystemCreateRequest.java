@@ -5,15 +5,11 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Getter
 @AllArgsConstructor
+@Getter
 @NoArgsConstructor
-public class FileUpdateRequest {
+public class FileSystemCreateRequest {
+
     @NotBlank
     private String name;
-
-    private String content;
-
-    @NotBlank
-    private String description;
 }
