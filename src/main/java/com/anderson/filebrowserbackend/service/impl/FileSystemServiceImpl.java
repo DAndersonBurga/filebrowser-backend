@@ -22,12 +22,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.AccessDeniedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -64,11 +64,11 @@ public class FileSystemServiceImpl implements FileSystemService {
     @Override
     public FileSystemUploadResponse upload(MultipartFile multipartFile) {
 
-        if( multipartFile.isEmpty() ) {
+        if (multipartFile.isEmpty()) {
             throw new FileUploadedEmptyException("Archivo vacío no permitido.");
         }
 
-        if(multipartFile.getOriginalFilename() == null || !multipartFile.getOriginalFilename().endsWith(".json")) {
+        if (multipartFile.getOriginalFilename() == null || !multipartFile.getOriginalFilename().endsWith(".json")) {
             throw new InvalidFileFormatException("Formato de archivo inválido. Solo se permiten archivos .json");
         }
 
@@ -102,74 +102,67 @@ public class FileSystemServiceImpl implements FileSystemService {
     }
 
     @Override
-    public FileSystemResource downloadFile(UUID diskId, UUID fileId) {
-
+    public ByteArrayResource downloadFile(UUID diskId, UUID fileId) {
         VirtualDisk virtualDisk = fileSystemUtils.findVirtualDisk(diskId)
                 .orElseThrow(() -> new VirtualDiskNotFoundException("Virtual disk not found"));
 
         MyFile fileFound = fileSystemUtils.findFileById(virtualDisk, fileId)
                 .orElseThrow(() -> new VirtualDiskNotFoundException("File not found"));
 
-        if (fileFound.getFileType() == FileType.TXT_FILE) {
-            File file = new File(TEMP_DIR, fileFound.getName() + ".txt");
-
-            try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
-                TextMyFile textMyFile = (TextMyFile) fileFound;
-                writer.write(textMyFile.getContent());
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+        try {
+            if (fileFound.getFileType() == FileType.TXT_FILE) {
+                File tempFile = File.createTempFile(fileFound.getName(), ".txt");
+                createTxtFile(tempFile, (TextMyFile) fileFound);
+                return new ByteArrayResource(Files.readAllBytes(tempFile.toPath()));
+            } else if (fileFound.getFileType() == FileType.DIRECTORY) {
+                File zipFile = createTempZipFile(fileFound);
+                return new ByteArrayResource(Files.readAllBytes(zipFile.toPath()));
+            } else {
+                throw new IllegalArgumentException("Unsupported file type for download");
             }
-
-            return new FileSystemResource(file);
+        } catch (IOException e) {
+            throw new RuntimeException("Error creating or retrieving temporary file", e);
         }
-
-        return null;
     }
 
-//        try {
-//            // Crear una carpeta temporal
-//            Path tempDirPath = Paths.get(TEMP_DIR, "Carpeta1");
-//            if (!Files.exists(tempDirPath)) {
-//                Files.createDirectory(tempDirPath);
-//            }
-//
-//            // Crear un archivo de texto dentro de la carpeta temporal
-//            Path tempFilePath =  Files.createFile(tempDirPath.resolve("archivo.txt"));
-//            try (BufferedWriter writer = Files.newBufferedWriter(tempFilePath)) {
-//                writer.write("Contenido del archivo");
-//            }
-//
-//            Path zipFilePath = Paths.get(TEMP_DIR, "archivoZip.zip");
-//
-//            try (FileOutputStream fos = new FileOutputStream(zipFilePath.toFile());
-//                 ZipOutputStream zos = new ZipOutputStream(fos)) {
-//                zipDirectory(tempDirPath.toFile(), tempDirPath.getFileName().toString(), zos);
-//            }
-//
-//            // Retornar la respuesta con el archivo ZIP de la carpeta temporal
-//            return new FileSystemResource(zipFilePath.toFile());
-//        } catch (IOException e) {
-//            throw new RuntimeException(e);
-//
-//        }
+    private void createTxtFile(File file, TextMyFile textMyFile) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+            writer.write(textMyFile.getContent());
+        } catch (IOException e) {
+            throw new RuntimeException("Error creating text file", e);
+        }
+    }
 
+    public File createTempZipFile(MyFile directory) throws IOException {
+        File zipFile = File.createTempFile(directory.getName(), ".zip");
+        try (FileOutputStream fos = new FileOutputStream(zipFile);
+             ZipOutputStream zos = new ZipOutputStream(fos)) {
 
-    private void zipDirectory(File folder, String parentFolder, ZipOutputStream zos) throws IOException {
-        for (File file : folder.listFiles()) {
-            if (file.isDirectory()) {
-                zipDirectory(file, parentFolder + "/" + file.getName(), zos);
-                continue;
+            addFilesToZip(zos, Paths.get(directory.getName()), directory);
+        }
+        return zipFile;
+    }
+
+    private void addFilesToZip(ZipOutputStream zos, Path currentPath, MyFile directory) throws IOException {
+        for (Map.Entry<String, MyFile> fileEntry : directory.getFiles().entrySet()) {
+            MyFile file = fileEntry.getValue();
+            Path filePath = currentPath.resolve(file.getName());
+
+            if (file.getFileType() == FileType.TXT_FILE) {
+                zos.putNextEntry(new ZipEntry(filePath + ".txt"));
+                byte[] contentBytes = ((TextMyFile) file).getContent().getBytes(StandardCharsets.UTF_8);
+                zos.write(contentBytes, 0, contentBytes.length);
+                zos.closeEntry();
+
+            } else if (file.getFileType() == FileType.DIRECTORY) {
+                zos.putNextEntry(new ZipEntry(filePath + "/"));
+                zos.closeEntry();
+
+                addFilesToZip(zos, filePath, file);
+
+            } else {
+                throw new IllegalArgumentException("Unsupported file type for zip");
             }
-            zos.putNextEntry(new ZipEntry(parentFolder + "/" + file.getName()));
-
-            try (FileInputStream fis = new FileInputStream(file)) {
-                byte[] buffer = new byte[1024];
-                int length;
-                while ((length = fis.read(buffer)) >= 0) {
-                    zos.write(buffer, 0, length);
-                }
-            }
-            zos.closeEntry();
         }
     }
 }

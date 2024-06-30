@@ -18,5 +18,5 @@ public interface FileSystemService {
     CreatedFileSystemResponse create(FileSystemCreateRequest request);
     FileSystemUploadResponse upload(MultipartFile multipartFile);
     ByteArrayResource export();
-    FileSystemResource downloadFile(UUID diskId, UUID fileId);
+    ByteArrayResource downloadFile(UUID diskId, UUID fileId);
 }

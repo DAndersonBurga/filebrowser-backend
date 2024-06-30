@@ -54,11 +54,11 @@ public class FileSystemController {
     }
 
     @GetMapping("/download/{disk-id}/{file-id}")
-    public ResponseEntity<FileSystemResource> exportFileSystem(
+    public ResponseEntity<ByteArrayResource> exportFileSystem(
             @PathVariable(name = "disk-id") UUID diskId,
             @PathVariable(name = "file-id") UUID fileId) throws IOException {
 
-        FileSystemResource fileSystemResource = fileSystemService.downloadFile(diskId, fileId);
+        ByteArrayResource fileSystemResource = fileSystemService.downloadFile(diskId, fileId);
 
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
