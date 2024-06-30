@@ -11,6 +11,7 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @SuperBuilder
 @ToString(callSuper = true)
-public class VirtualDisk extends File {
+public class VirtualDisk extends MyFile {
     private String label;
+    private int numberOfFiles;
 }

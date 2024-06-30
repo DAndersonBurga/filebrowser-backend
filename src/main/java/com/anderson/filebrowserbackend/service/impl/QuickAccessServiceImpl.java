@@ -5,7 +5,7 @@ import com.anderson.filebrowserbackend.controller.response.FileActionResponse;
 import com.anderson.filebrowserbackend.controller.response.FileResponse;
 import com.anderson.filebrowserbackend.error.exceptions.FileNotFoundException;
 import com.anderson.filebrowserbackend.error.exceptions.VirtualDiskNotFoundException;
-import com.anderson.filebrowserbackend.model.File;
+import com.anderson.filebrowserbackend.model.MyFile;
 import com.anderson.filebrowserbackend.model.FileSystem;
 import com.anderson.filebrowserbackend.model.VirtualDisk;
 import com.anderson.filebrowserbackend.service.interfaces.QuickAccessService;
@@ -30,7 +30,7 @@ public class QuickAccessServiceImpl implements QuickAccessService {
         VirtualDisk virtualDisk = fileSystemUtils.findVirtualDisk(request.getDiskId())
                 .orElseThrow(() -> new VirtualDiskNotFoundException("Virtual disk not found"));
 
-        File fileFound = fileSystemUtils.findFileById(virtualDisk, request.getFileId())
+        MyFile fileFound = fileSystemUtils.findFileById(virtualDisk, request.getFileId())
                 .orElseThrow(() -> new FileNotFoundException("File not found"));
 
         fileSystem.getQuickAccessList().add(fileFound);
@@ -42,7 +42,7 @@ public class QuickAccessServiceImpl implements QuickAccessService {
     public List<FileResponse> getQuickAccess() {
 
         List<FileResponse> responses = new ArrayList<>();
-        for (File file : fileSystem.getQuickAccessList()) {
+        for (MyFile file : fileSystem.getQuickAccessList()) {
 
             FileResponse fileResponse = mapper.map(file, FileResponse.class);
             responses.add(fileResponse);

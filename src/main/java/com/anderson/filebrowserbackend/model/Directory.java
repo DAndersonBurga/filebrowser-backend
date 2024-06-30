@@ -11,6 +11,6 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @SuperBuilder
 @ToString
-public class Directory extends File {
+public class Directory extends MyFile {
     private int numberOfFiles;
 }

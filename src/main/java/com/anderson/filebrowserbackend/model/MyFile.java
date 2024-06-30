@@ -19,7 +19,7 @@ import java.util.UUID;
         visible = true
 )
 @JsonSubTypes({
-        @JsonSubTypes.Type(value = TextFile.class, name = "TXT_FILE"),
+        @JsonSubTypes.Type(value = TextMyFile.class, name = "TXT_FILE"),
         @JsonSubTypes.Type(value = Directory.class, name = "DIRECTORY"),
         @JsonSubTypes.Type(value = VirtualDisk.class, name = "VIRTUAL_DISK")
 })
@@ -30,7 +30,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @SuperBuilder
 @ToString
-public class File implements Serializable {
+public class MyFile implements Serializable {
     private UUID id;
     private String name;
     private String path;
@@ -39,7 +39,7 @@ public class File implements Serializable {
     private LocalDateTime lastModifiedAt;
     private double size;
     private FileType fileType;
-    private Map<String, File> files;
+    private Map<String, MyFile> files;
     private UUID diskId;
     private UUID parentId;
 
@@ -47,7 +47,7 @@ public class File implements Serializable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        File file = (File) o;
+        MyFile file = (MyFile) o;
         return Objects.equals(id, file.id);
     }
 }

@@ -56,11 +56,11 @@ public class VirtualDiskServiceImpl implements VirtualDiskService {
             throw new VirtualDiskNotFoundException("Virtual disk not found.");
         }
 
-        Map<String, File> files = virtualDisk.getFiles();
+        Map<String, MyFile> files = virtualDisk.getFiles();
         List<FileResponse> fileResponses = new ArrayList<>();
 
-        for (Map.Entry<String, File> stringFileEntry : files.entrySet()) {
-            File file = stringFileEntry.getValue();
+        for (Map.Entry<String, MyFile> stringFileEntry : files.entrySet()) {
+            MyFile file = stringFileEntry.getValue();
             FileResponse fileResponse;
 
             fileResponse = mapper.map(file, FileResponse.class);

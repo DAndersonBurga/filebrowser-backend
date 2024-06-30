@@ -20,10 +20,7 @@ public interface FileService {
     void deleteFile(UUID idDisk, UUID idParent, UUID idFile);
 
     List<FileResponse> search(SearchRequest searchRequest);
-
     DirectorySearchResponse findWithPath(String path);
-
     List<TreeViewResponse> treeView();
-
     List<FileResponse> searchQuickAccess(SearchQuickAccessRequest searchRequest);
 }

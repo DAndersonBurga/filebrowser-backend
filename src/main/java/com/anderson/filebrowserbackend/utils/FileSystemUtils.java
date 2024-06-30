@@ -7,7 +7,6 @@ import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 
-import javax.swing.text.html.Option;
 import java.util.*;
 
 @Component
@@ -39,10 +38,10 @@ public class FileSystemUtils {
         return Optional.empty();
     }
 
-    public void searchFilesByName(List<FileResponse> coincidences, String query, File parent) {
+    public void searchFilesByName(List<FileResponse> coincidences, String query, MyFile parent) {
 
-        for (Map.Entry<String, File> stringFileEntry : parent.getFiles().entrySet()) {
-            File subFile = stringFileEntry.getValue();
+        for (Map.Entry<String, MyFile> stringFileEntry : parent.getFiles().entrySet()) {
+            MyFile subFile = stringFileEntry.getValue();
 
             if (subFile.getName().contains(query)) {
                 FileResponse fileResponse = mapper.map(subFile, FileResponse.class);
@@ -56,7 +55,7 @@ public class FileSystemUtils {
 
     }
 
-    public Optional<File> findFileById(File file, UUID id) {
+    public Optional<MyFile> findFileById(MyFile file, UUID id) {
 
         if(file == null) {
             return Optional.empty();
@@ -66,15 +65,15 @@ public class FileSystemUtils {
             return Optional.of(file);
         }
 
-        for (Map.Entry<String, File> stringFileEntry : file.getFiles().entrySet()) {
-            File subFile = stringFileEntry.getValue();
+        for (Map.Entry<String, MyFile> stringFileEntry : file.getFiles().entrySet()) {
+            MyFile subFile = stringFileEntry.getValue();
 
             if (subFile.getId().equals(id)) {
                 return Optional.of(subFile);
             }
 
             if (subFile.getFiles() != null && !subFile.getFiles().isEmpty()) {
-                Optional<File> result = findFileById(subFile, id);
+                Optional<MyFile> result = findFileById(subFile, id);
                 if (result.isPresent()) {
                     return result;
                 }
@@ -84,21 +83,21 @@ public class FileSystemUtils {
         return Optional.empty();
     }
 
-    public Optional<File> findParentFileById(File file, UUID id) {
+    public Optional<MyFile> findParentFileById(MyFile file, UUID id) {
 
         if(file.getId().equals(id)) {
             return Optional.of(file);
         }
 
-        for (Map.Entry<String, File> stringFileEntry : file.getFiles().entrySet()) {
-            File subFile = stringFileEntry.getValue();
+        for (Map.Entry<String, MyFile> stringFileEntry : file.getFiles().entrySet()) {
+            MyFile subFile = stringFileEntry.getValue();
 
             if (subFile.getId().equals(id)) {
                 return Optional.of(file);
             }
 
             if (subFile instanceof Directory) {
-                Optional<File> result = findParentFileById(subFile, id);
+                Optional<MyFile> result = findParentFileById(subFile, id);
                 if (result.isPresent()) {
                     return result;
                 }
@@ -108,12 +107,12 @@ public class FileSystemUtils {
         return Optional.empty();
     }
 
-    public void updateFilesSize(VirtualDisk virtualDisk, File file, double size) {
+    public void updateFilesSize(VirtualDisk virtualDisk, MyFile file, double size) {
 
-        Optional<File> parentFoundOptional = findParentFileById(virtualDisk, file.getId());
+        Optional<MyFile> parentFoundOptional = findParentFileById(virtualDisk, file.getId());
 
         while (parentFoundOptional.isPresent()) {
-            File parentFound = parentFoundOptional.get();
+            MyFile parentFound = parentFoundOptional.get();
             parentFound.setSize(parentFound.getSize() + size);
 
             if (parentFound instanceof VirtualDisk) {
@@ -125,14 +124,14 @@ public class FileSystemUtils {
 
     }
 
-    public Optional<File> findDirectoryByPath(VirtualDisk virtualDisk, String[] arrPaths) {
+    public Optional<MyFile> findDirectoryByPath(VirtualDisk virtualDisk, String[] arrPaths) {
         return findDirectoryByPath(virtualDisk.getFiles(), arrPaths, 0);
     }
 
-    private Optional<File> findDirectoryByPath(Map<String, File> files, String[] arrPaths, int position) {
+    private Optional<MyFile> findDirectoryByPath(Map<String, MyFile> files, String[] arrPaths, int position) {
 
-        for (Map.Entry<String, File> stringFileEntry : files.entrySet()) {
-            File subFile = stringFileEntry.getValue();
+        for (Map.Entry<String, MyFile> stringFileEntry : files.entrySet()) {
+            MyFile subFile = stringFileEntry.getValue();
 
             if(subFile.getFileType() == FileType.DIRECTORY) {
                 if(arrPaths.length - 1 == position) {
@@ -166,10 +165,10 @@ public class FileSystemUtils {
         return treeViewResponses;
     }
 
-    public void buildTreeView(File file, TreeViewResponse treeViewResponse) {
+    public void buildTreeView(MyFile file, TreeViewResponse treeViewResponse) {
 
-        for (Map.Entry<String, File> stringFileEntry : file.getFiles().entrySet()) {
-            File subFile = stringFileEntry.getValue();
+        for (Map.Entry<String, MyFile> stringFileEntry : file.getFiles().entrySet()) {
+            MyFile subFile = stringFileEntry.getValue();
 
             if (subFile.getFileType() != FileType.TXT_FILE) {
                 TreeViewResponse child = mapper.map(subFile, TreeViewResponse.class);
@@ -189,7 +188,7 @@ public class FileSystemUtils {
 
     }
 
-    private Map<String, Object> generateMetadata(File file) {
+    private Map<String, Object> generateMetadata(MyFile file) {
         Map<String, Object> metadata = new HashMap<>();
         metadata.put("diskId", file.getDiskId());
         metadata.put("parentId", file.getParentId());

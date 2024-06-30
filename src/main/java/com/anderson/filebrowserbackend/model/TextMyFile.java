@@ -12,6 +12,6 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @SuperBuilder
 @ToString
-public class TextFile extends File {
+public class TextMyFile extends MyFile {
     private String content;
 }

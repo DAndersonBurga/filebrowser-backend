@@ -63,10 +63,10 @@ public class FileServiceImpl implements FileService {
         VirtualDisk virtualDisk = fileSystemUtils.findVirtualDisk(idDisk)
                 .orElseThrow(() -> new VirtualDiskNotFoundException("Virtual disk not found"));
 
-        File parentFile = fileSystemUtils.findParentFileById(virtualDisk, idFile)
+        MyFile parentFile = fileSystemUtils.findParentFileById(virtualDisk, idFile)
                 .orElseThrow(() -> new FileNotFoundException("Parent File not found"));
 
-        File file = parentFile.getFiles().get(idFile.toString());
+        MyFile file = parentFile.getFiles().get(idFile.toString());
 
         // Update size in parent
         parentFile.setSize(parentFile.getSize() - file.getSize());
@@ -76,7 +76,7 @@ public class FileServiceImpl implements FileService {
         file.setLastModifiedAt(LocalDateTime.now());
 
         if(file.getFileType() == FileType.TXT_FILE) {
-            TextFile textFile = (TextFile) file;
+            TextMyFile textFile = (TextMyFile) file;
             textFile.setContent(fileUpdateRequest.getContent());
         }
 
@@ -104,7 +104,7 @@ public class FileServiceImpl implements FileService {
 
         List<FileResponse> fileResponses = new ArrayList<>();
 
-        for (Map.Entry<String, File> stringFileEntry : directory.getFiles().entrySet()) {
+        for (Map.Entry<String, MyFile> stringFileEntry : directory.getFiles().entrySet()) {
             FileResponse fileResponse = mapper.map(stringFileEntry.getValue(), FileResponse.class);
             fileResponses.add(fileResponse);
         }
@@ -117,10 +117,10 @@ public class FileServiceImpl implements FileService {
         VirtualDisk sourceVirtualDisk = fileSystemUtils.findVirtualDisk(fileActionRequest.getSourceDiskId())
                 .orElseThrow(() -> new VirtualDiskNotFoundException("Virtual disk not found"));
 
-        File file = fileSystemUtils.findFileById(sourceVirtualDisk, fileActionRequest.getFileId())
+        MyFile file = fileSystemUtils.findFileById(sourceVirtualDisk, fileActionRequest.getFileId())
                 .orElseThrow(() -> new FileNotFoundException("File not found"));
 
-        File newFile = SerializationUtils.clone(file);
+        MyFile newFile = SerializationUtils.clone(file);
 
         VirtualDisk destinationVirtualDisk;
 
@@ -140,19 +140,19 @@ public class FileServiceImpl implements FileService {
                 .orElseThrow(() -> new VirtualDiskNotFoundException("Virtual disk not found"));
 
         if(idDisk.equals(idParent)) {
-            File file = virtualDisk.getFiles().get(idFile.toString());
+            MyFile file = virtualDisk.getFiles().get(idFile.toString());
             virtualDisk.getFiles().remove(idFile.toString());
 
             fileSystemUtils.updateFilesSize(virtualDisk, file, (file.getSize() * -1));
         } else {
-            File parent = fileSystemUtils.findFileById(virtualDisk, idParent)
+            MyFile parent = fileSystemUtils.findFileById(virtualDisk, idParent)
                     .orElseThrow(() -> new FileNotFoundException("Parent directory not found"));
 
-            File file = parent.getFiles().get(idFile.toString());
+            MyFile file = parent.getFiles().get(idFile.toString());
             parent.setSize(parent.getSize() - file.getSize());
 
-            List<File> quickAccessList = fileSystem.getQuickAccessList();
-            for (File quickAccess : quickAccessList) {
+            List<MyFile> quickAccessList = fileSystem.getQuickAccessList();
+            for (MyFile quickAccess : quickAccessList) {
                 if(quickAccess.getId().equals(file.getId())) {
                     quickAccessList.remove(file);
                     break;
@@ -178,10 +178,10 @@ public class FileServiceImpl implements FileService {
         VirtualDisk sourceVirtualDisk = fileSystemUtils.findVirtualDisk(fileActionRequest.getSourceDiskId())
                 .orElseThrow(() -> new VirtualDiskNotFoundException("Virtual disk not found"));
 
-        File file = fileSystemUtils.findFileById(sourceVirtualDisk, fileActionRequest.getFileId())
+        MyFile file = fileSystemUtils.findFileById(sourceVirtualDisk, fileActionRequest.getFileId())
                 .orElseThrow(() -> new FileNotFoundException("File not found"));
 
-        File newFile = SerializationUtils.clone(file);
+        MyFile newFile = SerializationUtils.clone(file);
 
         // Delete file in the source
         deleteFile(fileActionRequest.getSourceDiskId(),
@@ -242,7 +242,7 @@ public class FileServiceImpl implements FileService {
             return coincidences;
         }
 
-        File parent = fileSystemUtils.findFileById(virtualDisk, searchRequest.getParentId())
+        MyFile parent = fileSystemUtils.findFileById(virtualDisk, searchRequest.getParentId())
                 .orElseThrow(() -> new FileNotFoundException("Parent file not found"));
 
         fileSystemUtils.searchFilesByName(coincidences, searchRequest.getQuery(), parent);
@@ -265,7 +265,7 @@ public class FileServiceImpl implements FileService {
             return new DirectorySearchResponse(virtualDisk.getId(), null);
         }
 
-        File directoryFound = fileSystemUtils.findDirectoryByPath(virtualDisk, newArrNames)
+        MyFile directoryFound = fileSystemUtils.findDirectoryByPath(virtualDisk, newArrNames)
                 .orElseThrow(() -> new FileNotFoundException("Directory not found"));
 
 
@@ -281,8 +281,8 @@ public class FileServiceImpl implements FileService {
     public List<FileResponse> searchQuickAccess(SearchQuickAccessRequest searchRequest) {
         List<FileResponse> coincidences = new ArrayList<>();
 
-        List<File> quickAccessList = fileSystem.getQuickAccessList();
-        for (File file : quickAccessList) {
+        List<MyFile> quickAccessList = fileSystem.getQuickAccessList();
+        for (MyFile file : quickAccessList) {
             if(file.getName().contains(searchRequest.getQuery())) {
                 FileResponse fileResponse = mapper.map(file, FileResponse.class);
                 coincidences.add(fileResponse);
@@ -292,8 +292,8 @@ public class FileServiceImpl implements FileService {
         return coincidences;
     }
 
-    private FileActionResponse createTextFileInParent(TextFileCreateRequest request, File parent, VirtualDisk virtualDisk) {
-        TextFile file = mapper.map(request, TextFile.class);
+    private FileActionResponse createTextFileInParent(TextFileCreateRequest request, MyFile parent, VirtualDisk virtualDisk) {
+        TextMyFile file = mapper.map(request, TextMyFile.class);
         file.setCreationAt(LocalDateTime.now());
         file.setId(UUID.randomUUID());
         file.setPath(parent.getPath());
@@ -313,7 +313,7 @@ public class FileServiceImpl implements FileService {
         return new FileActionResponse("File created", file.getFileType());
     }
 
-    private FileActionResponse createFolderInParent(FolderCreateRequest request, File parent, VirtualDisk virtualDisk) {
+    private FileActionResponse createFolderInParent(FolderCreateRequest request, MyFile parent, VirtualDisk virtualDisk) {
 
         Directory folder = mapper.map(request, Directory.class);
         folder.setCreationAt(LocalDateTime.now());
@@ -339,7 +339,7 @@ public class FileServiceImpl implements FileService {
         return new FileActionResponse("Folder created", folder.getFileType());
     }
 
-    private FileActionResponse copyFileInParent(VirtualDisk virtualDisk, UUID idDisk, UUID idParent, File newFile) {
+    private FileActionResponse copyFileInParent(VirtualDisk virtualDisk, UUID idDisk, UUID idParent, MyFile newFile) {
         UUID uuid = UUID.randomUUID();
         newFile.setName(newFile.getName() + "-copy" + uuid.toString().substring(0,5));
         newFile.setId(uuid);
