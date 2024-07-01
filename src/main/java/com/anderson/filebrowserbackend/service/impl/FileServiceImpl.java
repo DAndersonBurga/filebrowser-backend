@@ -334,7 +334,8 @@ public class FileServiceImpl implements FileService {
 
         Directory folder = mapper.map(request, Directory.class);
 
-        if(!fileSystemUtils.verifyUniqueFileName(parent, folder)) {
+        if(fileSystemUtils.verifyUniqueFileName(parent, folder)) {
+            System.out.println(folder.getName());
             throw new DuplicateFileNameException("Ya existe un archivo con ese nombre!");
         }
 
