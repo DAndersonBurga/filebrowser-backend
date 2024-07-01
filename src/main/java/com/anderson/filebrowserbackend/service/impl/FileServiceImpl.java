@@ -95,6 +95,8 @@ public class FileServiceImpl implements FileService {
 
         file.setSize(size);
 
+        updateQuickAccess(file, fileUpdateRequest);
+
         // Update size in parent after update
         parentFile.setSize(parentFile.getSize() + difference);
         fileSystemUtils.updateFilesSize(virtualDisk, parentFile, difference);
@@ -275,7 +277,10 @@ public class FileServiceImpl implements FileService {
         VirtualDisk virtualDisk = fileSystemUtils.findVirtualDisk(arrNames[1])
                 .orElseThrow(() -> new VirtualDiskNotFoundException("Virtual Disk Not Found"));
 
+        System.out.println(virtualDisk.getName());
+
         String[] newArrNames = Arrays.copyOfRange(arrNames,2, arrNames.length);
+        System.out.println(Arrays.toString(newArrNames));
 
         if(newArrNames.length == 0) {
             return new DirectorySearchResponse(virtualDisk.getId(), null);
@@ -407,4 +412,20 @@ public class FileServiceImpl implements FileService {
         return new FileActionResponse("Archivo copiado correctamente!", newFile.getFileType());
     }
 
+    private void updateQuickAccess(MyFile file, FileUpdateRequest request) {
+        // Update QuickAccess
+        for (MyFile myFile : fileSystem.getQuickAccessList()) {
+            if(myFile.getId().equals(file.getId())) {
+                myFile.setName(request.getName());
+                myFile.setDescription(request.getDescription());
+                myFile.setLastModifiedAt(file.getLastModifiedAt());
+                myFile.setSize(myFile.getSize());
+
+                if(myFile.getFileType() == FileType.TXT_FILE) {
+                    TextMyFile textMyFile = (TextMyFile) myFile;
+                    textMyFile.setContent(request.getContent());
+                }
+            }
+        }
+    }
 }

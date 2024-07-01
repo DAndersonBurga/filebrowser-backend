@@ -125,6 +125,7 @@ public class FileSystemUtils {
     }
 
     public Optional<MyFile> findDirectoryByPath(VirtualDisk virtualDisk, String[] arrPaths) {
+        System.out.println(virtualDisk.getName());
         return findDirectoryByPath(virtualDisk.getFiles(), arrPaths, 0);
     }
 
@@ -133,10 +134,11 @@ public class FileSystemUtils {
         for (Map.Entry<String, MyFile> stringFileEntry : files.entrySet()) {
             MyFile subFile = stringFileEntry.getValue();
 
-            if(subFile.getFileType() == FileType.DIRECTORY) {
+            if(subFile.getFileType() == FileType.DIRECTORY && subFile.getName().equals(arrPaths[position])) {
                 if(arrPaths.length - 1 == position) {
                     return Optional.of(subFile);
                 }
+
 
                 return findDirectoryByPath(subFile.getFiles(), arrPaths, position+1);
             }
