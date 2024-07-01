@@ -68,7 +68,11 @@ public class FileServiceImpl implements FileService {
                 .orElseThrow(() -> new FileNotFoundException("Parent File not found"));
 
         MyFile file = parentFile.getFiles().get(idFile.toString());
-        if(fileSystemUtils.verifyUniqueFileName(parentFile, file)) {
+
+        if(fileSystemUtils.verifyUniqueFileName(parentFile, MyFile.builder()
+                .name(fileUpdateRequest.getName())
+                .fileType(file.getFileType())
+                .build())) {
             throw new DuplicateFileNameException("Ya existe un archivo con ese nombre!");
         }
 
