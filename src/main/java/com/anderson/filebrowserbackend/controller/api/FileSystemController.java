@@ -54,9 +54,9 @@ public class FileSystemController {
     }
 
     @GetMapping("/download/{disk-id}/{file-id}")
-    public ResponseEntity<ByteArrayResource> exportFileSystem(
+    public ResponseEntity<ByteArrayResource> downloadFile(
             @PathVariable(name = "disk-id") UUID diskId,
-            @PathVariable(name = "file-id") UUID fileId) throws IOException {
+            @PathVariable(name = "file-id") UUID fileId) {
 
         ByteArrayResource fileSystemResource = fileSystemService.downloadFile(diskId, fileId);
 

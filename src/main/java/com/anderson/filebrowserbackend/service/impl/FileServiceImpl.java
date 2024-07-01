@@ -5,6 +5,7 @@ import com.anderson.filebrowserbackend.controller.response.DirectorySearchRespon
 import com.anderson.filebrowserbackend.controller.response.FileActionResponse;
 import com.anderson.filebrowserbackend.controller.response.FileResponse;
 import com.anderson.filebrowserbackend.controller.response.TreeViewResponse;
+import com.anderson.filebrowserbackend.error.exceptions.DuplicateFileNameException;
 import com.anderson.filebrowserbackend.error.exceptions.FileNotFoundException;
 import com.anderson.filebrowserbackend.error.exceptions.FileSourceInvalidException;
 import com.anderson.filebrowserbackend.error.exceptions.VirtualDiskNotFoundException;
@@ -67,6 +68,9 @@ public class FileServiceImpl implements FileService {
                 .orElseThrow(() -> new FileNotFoundException("Parent File not found"));
 
         MyFile file = parentFile.getFiles().get(idFile.toString());
+        if(fileSystemUtils.verifyUniqueFileName(parentFile, file)) {
+            throw new DuplicateFileNameException("Ya existe un archivo con ese nombre!");
+        }
 
         // Update size in parent
         parentFile.setSize(parentFile.getSize() - file.getSize());
@@ -193,6 +197,10 @@ public class FileServiceImpl implements FileService {
                 .orElseThrow(() -> new VirtualDiskNotFoundException("Virtual disk not found"));
 
         if(fileActionRequest.getDestinationDiskId().equals(fileActionRequest.getDestinationParentId())) {
+            if(fileSystemUtils.verifyUniqueFileName(destinationVirtualDisk, newFile)) {
+                throw new DuplicateFileNameException("Ya existe un archivo con ese nombre!");
+            }
+
             if(newFile.getFileType() == FileType.TXT_FILE) {
                 newFile.setPath(destinationVirtualDisk.getPath());
             } else {
@@ -212,6 +220,10 @@ public class FileServiceImpl implements FileService {
                     destinationVirtualDisk, fileActionRequest.getDestinationParentId()
                 )
             .orElseThrow(() -> new FileNotFoundException("Parent directory not found"));
+
+        if(fileSystemUtils.verifyUniqueFileName(parent, newFile)) {
+            throw new DuplicateFileNameException("Ya existe un archivo con ese nombre!");
+        }
 
         newFile.setDiskId(destinationVirtualDisk.getId());
         newFile.setParentId(parent.getId());
@@ -294,6 +306,11 @@ public class FileServiceImpl implements FileService {
 
     private FileActionResponse createTextFileInParent(TextFileCreateRequest request, MyFile parent, VirtualDisk virtualDisk) {
         TextMyFile file = mapper.map(request, TextMyFile.class);
+
+        if(fileSystemUtils.verifyUniqueFileName(parent, file)) {
+            throw new DuplicateFileNameException("Ya existe un archivo con ese nombre!");
+        }
+
         file.setCreationAt(LocalDateTime.now());
         file.setId(UUID.randomUUID());
         file.setPath(parent.getPath());
@@ -316,6 +333,11 @@ public class FileServiceImpl implements FileService {
     private FileActionResponse createFolderInParent(FolderCreateRequest request, MyFile parent, VirtualDisk virtualDisk) {
 
         Directory folder = mapper.map(request, Directory.class);
+
+        if(!fileSystemUtils.verifyUniqueFileName(parent, folder)) {
+            throw new DuplicateFileNameException("Ya existe un archivo con ese nombre!");
+        }
+
         folder.setCreationAt(LocalDateTime.now());
         folder.setId(UUID.randomUUID());
         folder.setDiskId(virtualDisk.getId());
@@ -340,12 +362,14 @@ public class FileServiceImpl implements FileService {
     }
 
     private FileActionResponse copyFileInParent(VirtualDisk virtualDisk, UUID idDisk, UUID idParent, MyFile newFile) {
+
         UUID uuid = UUID.randomUUID();
         newFile.setName(newFile.getName() + "-copy" + uuid.toString().substring(0,5));
         newFile.setId(uuid);
         newFile.setDiskId(virtualDisk.getId());
 
         if(idDisk.equals(idParent)) {
+
             if(newFile.getFileType() == FileType.TXT_FILE) {
                 newFile.setPath(virtualDisk.getPath());
             } else {

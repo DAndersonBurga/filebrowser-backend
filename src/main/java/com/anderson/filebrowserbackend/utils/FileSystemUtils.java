@@ -188,6 +188,20 @@ public class FileSystemUtils {
 
     }
 
+    public boolean verifyUniqueFileName(MyFile parent, MyFile file) {
+
+        for (Map.Entry<String, MyFile> stringFileEntry : parent.getFiles().entrySet()) {
+            MyFile subFile = stringFileEntry.getValue();
+
+            if (subFile.getFileType() == file.getFileType() &&
+                    subFile.getName().equals(file.getName())) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private Map<String, Object> generateMetadata(MyFile file) {
         Map<String, Object> metadata = new HashMap<>();
         metadata.put("diskId", file.getDiskId());
