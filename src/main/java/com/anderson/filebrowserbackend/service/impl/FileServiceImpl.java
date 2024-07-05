@@ -218,6 +218,7 @@ public class FileServiceImpl implements FileService {
 
             destinationVirtualDisk.setSize(destinationVirtualDisk.getSize() + newFile.getSize());
             destinationVirtualDisk.getFiles().put(newFile.getId().toString(), newFile);
+            updateQuickAccess(newFile);
 
             return new FileActionResponse("Archivo cortado correctamente!", newFile.getFileType());
         }
@@ -424,6 +425,20 @@ public class FileServiceImpl implements FileService {
                 if(myFile.getFileType() == FileType.TXT_FILE) {
                     TextMyFile textMyFile = (TextMyFile) myFile;
                     textMyFile.setContent(request.getContent());
+                }
+            }
+        }
+    }
+
+    private void updateQuickAccess(MyFile file) {
+        // Update QuickAccess
+        for (MyFile myFile : fileSystem.getQuickAccessList()) {
+            if(myFile.getId().equals(file.getId())) {
+                myFile = mapper.map(file, MyFile.class);
+
+                if(myFile.getFileType() == FileType.TXT_FILE) {
+                    TextMyFile textMyFile = (TextMyFile) file;
+                    textMyFile.setContent(textMyFile.getContent());
                 }
             }
         }

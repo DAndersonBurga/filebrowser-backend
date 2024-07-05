@@ -5,7 +5,7 @@
 ### Clonar el Repositorio
 ```bash
 git clone https://github.com/DAndersonBurga/filebrowser-backend.git
-cd filebrowser
+cd filebrowser-backend
 ```
 
 ### Compilar el Proyecto

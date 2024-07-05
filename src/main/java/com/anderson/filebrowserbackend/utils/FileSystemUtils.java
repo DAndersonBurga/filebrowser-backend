@@ -197,8 +197,6 @@ public class FileSystemUtils {
 
             if (subFile.getFileType() == file.getFileType() &&
                     subFile.getName().equals(file.getName())) {
-                System.out.println("subFile.getName() = " + subFile.getName());
-                System.out.println("file.getName() = " + file.getName());
                 return true;
             }
         }
